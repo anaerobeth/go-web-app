@@ -3,6 +3,7 @@ package main
 import (
   "github.com/gorilla/mux"
   "net/http"
+  "os"
 )
 
 const (
@@ -12,8 +13,12 @@ const (
 func pageHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)
   pageID := vars["id"]
-  filename := "files/" + pageID + ".html"
-  http.ServeFile(w, r, filename)
+  fileName := "files/" + pageID + ".html"
+  _, err := os.Stat(fileName)
+  if err != nil {
+    fileName = "files/404.html"
+  }
+  http.ServeFile(w, r, fileName)
 }
 
 func main() {

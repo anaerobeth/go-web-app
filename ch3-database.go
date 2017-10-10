@@ -7,6 +7,7 @@ import (
   "github.com/gorilla/mux"
   "log"
   "net/http"
+  "html/template"
 )
 
 const (
@@ -34,11 +35,13 @@ func ServePage(w http.ResponseWriter, r *http.Request) {
   // Scan translates the results of a query to a struct
   err := database.QueryRow("SELECT page_title, page_content, page_date FROM pages WHERE page_guid=?", pageGUID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
   if err != nil {
-    log.Println("Could not get page: " + pageGUID)
-    log.Println(err.Error())
+    http.Error(w, http.StatusText(404), http.StatusNotFound)
+    log.Println("Could not get page")
+    return
   }
-  html := `<html><head><title>` + thisPage.Title + `</title></head></body><h1>` + thisPage.Title + `</h1><div>` + thisPage.Content + `</div></body></html>`
-  fmt.Fprintln(w, html)
+
+  t, _ := template.ParseFiles("templates/blog.html")
+  t.Execute(w, thisPage)
 }
 
 func main() {
